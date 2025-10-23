@@ -1,19 +1,19 @@
 [build-system]
-requires = ["setuptools>=69", "setuptools-scm>=8"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "json-logging"
-description = "JSON logging"
-readme = "README.md"
+version = "0.1.1"
+description = "JSON logging helper for Graystorm apps"
 requires-python = ">=3.11"
 authors = [{ name = "Jeff Culverhouse" }]
 license = { text = "MIT" }
-dynamic = ["version"]
-dependencies = []
 
-[tool.setuptools_scm]
-# tag-based versioning; optional
+[tool.setuptools]
+package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["json_logging*"]
+
