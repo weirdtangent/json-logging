@@ -60,6 +60,12 @@ def setup_logging() -> None:
     # optional: quiet noisy libs
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("asyncio").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore.http11").setLevel(logging.WARNING)
+    logging.getLogger("httpcore.connection").setLevel(logging.WARNING)
+    logging.getLogger("amcrest.http").setLevel(logging.ERROR)
+    logging.getLogger("amcrest.event").setLevel(logging.WARNING)
+    logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
     root._json_logging_initialized = True  # type: ignore[attr-defined]
 
