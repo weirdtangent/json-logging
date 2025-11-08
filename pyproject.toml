@@ -9,6 +9,7 @@ description = "JSON logging helper for Graystorm apps"
 requires-python = ">=3.11"
 authors = [{ name = "Jeff Culverhouse" }]
 license = { text = "MIT" }
+dependencies = []
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -16,4 +17,10 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["json_logging*"]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "ruff>=0.14.4",
+]
 

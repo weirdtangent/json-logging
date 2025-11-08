@@ -1,15 +1,23 @@
 from __future__ import annotations
-import json, logging, os, sys, time
+import json
+import logging
+import os
+import sys
+import time
 from typing import Any, Dict
 
-ENV_DEBUG   = os.getenv("DEBUG", "0") == "1"
-ENV_JSON    = os.getenv("FORCE_JSON", "0") == "1"
-ENV_SERVICE = os.getenv("SERVICE", os.path.basename(sys.argv[0]).replace(".py",""))
-ENV_LEVEL   = os.getenv("LOG_LEVEL", "INFO").upper()
+ENV_DEBUG = os.getenv("DEBUG", "0") == "1"
+ENV_JSON = os.getenv("FORCE_JSON", "0") == "1"
+ENV_SERVICE = os.getenv("SERVICE", os.path.basename(sys.argv[0]).replace(".py", ""))
+ENV_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
+
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        ts = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z"
+        ts = (
+            time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
+            + f".{int(record.msecs):03d}Z"
+        )
         payload: Dict[str, Any] = {
             "ts": ts,
             "level": record.levelname.lower(),
@@ -25,8 +33,23 @@ class JsonFormatter(logging.Formatter):
             payload["exc"] = self.formatException(record.exc_info)
 
         for k, v in record.__dict__.items():
-            if k in ("args","msg","levelname","levelno","name","module","funcName","lineno",
-                     "created","msecs","process","processName","thread","threadName","exc_info"):
+            if k in (
+                "args",
+                "msg",
+                "levelname",
+                "levelno",
+                "name",
+                "module",
+                "funcName",
+                "lineno",
+                "created",
+                "msecs",
+                "process",
+                "processName",
+                "thread",
+                "threadName",
+                "exc_info",
+            ):
                 continue
             if k.startswith("_"):
                 continue
@@ -38,10 +61,15 @@ class JsonFormatter(logging.Formatter):
                     payload[k] = str(v)
         return json.dumps(payload, ensure_ascii=False)
 
+
 def _make_console_formatter() -> logging.Formatter:
-    fmt = "%(asctime)s [%(levelname)s] %(name)s (%(funcName)s#%(lineno)d) %(message)s" if ENV_DEBUG \
-          else "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    fmt = (
+        "%(asctime)s [%(levelname)s] %(name)s (%(funcName)s#%(lineno)d) %(message)s"
+        if ENV_DEBUG
+        else "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+    )
     return logging.Formatter(fmt=fmt, datefmt="%H:%M:%S")
+
 
 def setup_logging() -> None:
     root = logging.getLogger()
@@ -65,9 +93,11 @@ def setup_logging() -> None:
     logging.getLogger("httpcore.connection").setLevel(logging.WARNING)
     logging.getLogger("amcrest.http").setLevel(logging.ERROR)
     logging.getLogger("amcrest.event").setLevel(logging.WARNING)
+    logging.getLogger("blinkpy.blinkpy").setLevel(logging.WARNING)
     logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
     root._json_logging_initialized = True  # type: ignore[attr-defined]
+
 
 def get_logger(name: str | None = None) -> logging.Logger:
     setup_logging()
