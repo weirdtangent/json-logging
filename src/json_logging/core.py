@@ -14,10 +14,7 @@ ENV_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
-        ts = (
-            time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created))
-            + f".{int(record.msecs):03d}Z"
-        )
+        ts = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(record.created)) + f".{int(record.msecs):03d}Z"
         payload: Dict[str, Any] = {
             "ts": ts,
             "level": record.levelname.lower(),
@@ -63,11 +60,7 @@ class JsonFormatter(logging.Formatter):
 
 
 def _make_console_formatter() -> logging.Formatter:
-    fmt = (
-        "%(asctime)s [%(levelname)s] %(name)s (%(funcName)s#%(lineno)d) %(message)s"
-        if ENV_DEBUG
-        else "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-    )
+    fmt = "%(asctime)s [%(levelname)s] %(name)s (%(funcName)s#%(lineno)d) %(message)s" if ENV_DEBUG else "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     return logging.Formatter(fmt=fmt, datefmt="%H:%M:%S")
 
 
