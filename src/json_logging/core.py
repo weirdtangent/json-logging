@@ -19,6 +19,7 @@ class JsonFormatter(logging.Formatter):
             "ts": ts,
             "level": record.levelname.lower(),
             "service": ENV_SERVICE,
+            "version": ENV_VERSION,
             "logger": record.name,
             "msg": record.getMessage(),
             "module": record.module,
