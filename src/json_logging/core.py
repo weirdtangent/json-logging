@@ -10,7 +10,7 @@ ENV_DEBUG = os.getenv("DEBUG", "0") == "1"
 ENV_JSON = os.getenv("FORCE_JSON", "0") == "1"
 ENV_SERVICE = os.getenv("SERVICE", os.path.basename(sys.argv[0]).replace(".py", ""))
 ENV_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-
+ENV_VERSION = os.getenv("APP_VERSION", "unknown")
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -94,4 +94,5 @@ def setup_logging() -> None:
 
 def get_logger(name: str | None = None) -> logging.Logger:
     setup_logging()
-    return logging.getLogger(name or ENV_SERVICE)
+    base = logging.getLogger(name or ENV_SERVICE)
+    return logging.LoggerAdapter(base, {"version": ENV_VERSION})
