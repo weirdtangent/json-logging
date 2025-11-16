@@ -7,10 +7,13 @@ import time
 from typing import Any, Dict
 
 ENV_DEBUG = os.getenv("DEBUG", "0") == "1"
-ENV_JSON = os.getenv("FORCE_JSON", "0") == "1"
+ENV_FORCE_JSON = os.getenv("FORCE_JSON", "0") == "1"
+ENV_FORCE_LOG_FMT = os.getenv("FORCE_LOG_FMT", "0") == "1"
+ENV_RESET_LOGGING = os.getenv("RESET_LOGGING", "1") == "1"
 ENV_SERVICE = os.getenv("SERVICE", os.path.basename(sys.argv[0]).replace(".py", ""))
 ENV_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 ENV_VERSION = os.getenv("APP_VERSION", "unknown")
+
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -65,17 +68,39 @@ def _make_console_formatter() -> logging.Formatter:
     return logging.Formatter(fmt=fmt, datefmt="%H:%M:%S")
 
 
-def setup_logging() -> None:
+def _should_use_json() -> bool:
+    if ENV_FORCE_JSON:
+        return True  # if both are set, JSON wins
+    if ENV_FORCE_LOG_FMT:
+        return False
+    return not sys.stdout.isatty()  # JSON if not a TTY
+
+
+def _attach_handler(root: logging.Logger, handler: logging.Handler, reset: bool) -> None:
+    if reset or not root.handlers:
+        if reset:
+            root.handlers.clear()
+        root.addHandler(handler)
+        return
+
+    for existing in root.handlers:
+        if isinstance(existing, logging.StreamHandler):
+            existing.setFormatter(handler.formatter)
+            return
+
+    root.addHandler(handler)
+
+
+def setup_logging(*, reset_handlers: bool | None = None) -> None:
     root = logging.getLogger()
     if getattr(root, "_json_logging_initialized", False):
         return
 
     handler = logging.StreamHandler(sys.stdout)
-    use_json = (not sys.stdout.isatty()) or ENV_JSON
-    handler.setFormatter(JsonFormatter() if use_json else _make_console_formatter())
+    handler.setFormatter(JsonFormatter() if _should_use_json() else _make_console_formatter())
 
-    root.handlers.clear()
-    root.addHandler(handler)
+    reset = ENV_RESET_LOGGING if reset_handlers is None else reset_handlers
+    _attach_handler(root, handler, reset)
     level = getattr(logging, ENV_LEVEL, logging.INFO)
     root.setLevel(logging.DEBUG if ENV_DEBUG else level)
 
